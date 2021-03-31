@@ -1,0 +1,4 @@
+portaaviones;5;A;1;h
+buque;4;J;0;v
+submarino;3;D;4;h
+crucero;2;F;5;v
