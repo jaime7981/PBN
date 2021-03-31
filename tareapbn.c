@@ -45,7 +45,48 @@ void OpenFile(char filename[]){
         printf("Could not open file %s",filename);
     }
     else{
-        while (fgets(str, MAXCHAR, files) != NULL) printf("%s", str);
+        int counter = 1;
+        while (fgets(str, MAXCHAR, files) != NULL) {
+            char type[15]; 
+            int len;
+            char col;
+            int row;
+            char orient;
+
+            for (int i = 0; i <= sizeof(str); i++){
+                char aux = str[i-1];
+                
+                if (str[i] == *";"){
+                    switch (counter) {
+                        case 1:
+                            for (int j = 0; j < 15; j++){
+                                if (j < i){
+                                    type[j] = str[j];
+                                }
+                                else{
+                                    type[j] = *"";
+                                }
+                            }
+                            //printf("%d %s", i, type);
+                            break;
+                        case 2:
+                            len = atoi(&str[(i-1)]);
+                            break;
+                        case 3:
+                            col = aux;
+                            break;
+                        case 4:
+                            row = atoi(&str[(i-1)]);
+                            aux = str[i+1];
+                            orient = aux;
+                            break;
+                    }
+                    counter ++;
+                }
+            }
+            printf("boat: %s length: %d column: %c row: %d orientation: %c\n", type, len, col, row, orient);
+            counter = 1;
+        }
         fclose(files);
     }
 }
