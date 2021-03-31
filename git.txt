@@ -1,0 +1,51 @@
+####Hacer Una Vez####
+Comenzar git en una carpeta
+
+- git init
+
+Agregar remote para subir mas facil los archivos
+
+- git remote add origin linkdegithub
+
+
+
+####Para subir archivos####
+
+Agregar archivos para subir (El punto (.) selecciona todos los archivos del directorio)
+
+- git add .
+
+Hacer commit de los archivos
+
+- git commit -m"Cualquier mensaje"
+
+Subir los archivos a GitHub (si usaste remote antes usar el segundo)
+
+- git push linkdegithub master
+
+o
+
+- git push origin master
+
+
+####Si alguien hizo cambios y los subio, hay que ponerse al dia####
+
+Recomendación: copiar archivo donde trabajaste para no perder progreso
+
+Actualizar los archivos tuyos con los de GitHub
+
+- git pull linkdegithub master
+
+o
+
+- git pull origin master
+
+Todos los archivos se sobre escriben y quedan igual a lo que esta subido en GitHub
+Ahora volver a ####Para subir archivos####
+
+
+####Utilidad####
+
+Despues del add utilizar este comando sirve para ver que archivos estan seleccionados para el commit
+
+- git status
