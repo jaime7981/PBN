@@ -39,7 +39,7 @@ int Input(char *text){
 
 void OpenFile(char filename[]){
     char str[MAXCHAR];
-    files = fopen(filename, "r");
+    files = fopen(strcat(filename,".txt"), "r"); 
     
     if (files == NULL){
         printf("Could not open file %s",filename);
