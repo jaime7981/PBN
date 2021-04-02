@@ -6,8 +6,8 @@
 
 int Input(char *text);
 void OpenFile(char *filename);
-void CreateBoard();
-void AddBoat(char *type, int len, char col, int row,char orient);
+void PrintBoard(char playerboard[10][10]);
+bool AddBoat(char *type, int len, char col, int row, char orient, char playerboard[10][10]);
 FILE *files;
 
 int main(int argc, char *argv[]){
@@ -21,8 +21,8 @@ int main(int argc, char *argv[]){
         p2name = argv[3];
 
         OpenFile(p1name);
+        OpenFile(p2name);
 
-        //CreateBoard();
     }
     else{
         printf("Error: Console Input is incorrect");
@@ -40,19 +40,27 @@ int Input(char *text){
 
 void OpenFile(char filename[]){
     char str[MAXCHAR];
-    files = fopen(strcat(filename,".txt"), "r"); 
+    files = fopen(filename, "r");
     
     if (files == NULL){
-        printf("Could not open file %s",filename);
+        printf("Could not open file %s\n",filename);
     }
     else{
         int counter = 1;
+        char playerboard[10][10];
+        for (int a = 0; a < sizeof(playerboard); a++){
+            for (int b = 0; b < sizeof(playerboard[a]); b++){
+                playerboard[a][b] = *"_";
+            }
+        }
+
         while (fgets(str, MAXCHAR, files) != NULL) {
             char type[15]; 
             int len;
             char col;
             int row;
             char orient;
+            bool error;
 
             for (int i = 0; i <= sizeof(str); i++){
                 char aux = str[i-1];
@@ -68,7 +76,6 @@ void OpenFile(char filename[]){
                                     type[j] = *"";
                                 }
                             }
-                            //printf("%d %s", i, type);
                             break;
                         case 2:
                             len = atoi(&str[(i-1)]);
@@ -86,14 +93,24 @@ void OpenFile(char filename[]){
                 }
             }
             printf("boat: %s length: %d column: %c row: %d orientation: %c\n", type, len, col, row, orient);
-            AddBoat(type, len, col, row, orient);
+            error = AddBoat(type, len, col, row, orient, playerboard);
+            if (error == false){
+                //printf("Boat added correctly\n");
+            }
+            else {
+                printf("Something with the boat settings went wrong");
+                exit(1);
+                break;
+            }
+            
             counter = 1;
         }
+        PrintBoard(playerboard);
         fclose(files);
     }
 }
 
-void AddBoat(char *type, int len, char col, int row,char orient){
+bool AddBoat(char *type, int len, char col, int row,char orient, char playerboard[10][10]){
     int col_to_num = (int)col - 65;
     bool pos;
     bool error = false;
@@ -106,68 +123,52 @@ void AddBoat(char *type, int len, char col, int row,char orient){
         pos = false;
     }
 
-    char *board[10][10];
-
     for (int i = 0; i < 10; i++){
         for (int j = 0; j < 10; j++){
             if (i == row && j == col_to_num){
-                board[i][j] = "X";
-                if (pos == true){
-                    counter ++;
-                    if (counter < len){
-                        col_to_num ++;
-                        if (col_to_num >= 10){
-                            printf("Boat out of bounds\n");
-                            error = true;
-                            break;
+                if (playerboard[i][j] != *"X"){
+                    playerboard[i][j] = *"X";
+                    if (pos == true){
+                        counter ++;
+                        if (counter < len){
+                            col_to_num ++;
+                            if (col_to_num >= 10){
+                                printf("Boat out of bounds\n");
+                                error = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (pos == false){
+                        counter ++;
+                        if (counter < len){
+                            row ++;
+                            if (row >= 10){
+                                printf("Boat out of bounds\n");
+                                error = true;
+                                break;
+                            }
                         }
                     }
                 }
-                if (pos == false){
-                    counter ++;
-                    if (counter < len){
-                        row ++;
-                        if (row >= 10){
-                            printf("Boat out of bounds\n");
-                            error = true;
-                            break;
-                        }
-                    }
+                else {
+                    printf("Boat already in place\n");
+                    error = true;
+                    break;
                 }
             }
-            else{
-                board[i][j] = "_";
-            }
-            
         }
     }
-    if (error == false){
-        printf("\n  A  B  C  D  E  F  G  H  I  J\n");
-        for (int i = 0; i < 10; i++){
-            printf("%d", i);
-            for (int j = 0; j < 10; j++){
-                printf("[%s]", board[i][j]);
-            }
-            printf("%d\n", i);
-        }
-        printf("  A  B  C  D  E  F  G  H  I  J\n");
-    }
+    return error;
 }
 
-void CreateBoard(){
-    char *board[10][10];
-
-    for (int i = 0; i < 10; i++){
-        for (int j = 0; j < 10; j++){
-            board[i][j] = "_";
-        }
-    }
+void PrintBoard(char playerboard[10][10]){
 
     printf("\n  A  B  C  D  E  F  G  H  I  J\n");
     for (int i = 0; i < 10; i++){
         printf("%d", i);
-        for (int j = 0; j < 10; j++){
-            printf("[%s]", board[i][j]);
+        for (int j = 0; j < sizeof(playerboard[i]); j++){
+            printf("[%c]", playerboard[i][j]);
         }
         printf("%d\n", i);
     }
