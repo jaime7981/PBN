@@ -4,10 +4,9 @@
 #include <string.h>
 #define MAXCHAR 1000
 
-int Input(char *text);
-void OpenFile(char *filename);
+void OpenFile(char filename[20], char playerone[10][10]);
 void PrintBoard(char playerboard[10][10]);
-bool AddBoat(char *type, int len, char col, int row, char orient, char playerboard[10][10]);
+bool AddBoat(char type[30], int len, char col, int row, char orient, char playerboard[10][10]);
 FILE *files;
 
 int main(int argc, char *argv[]){
@@ -20,25 +19,35 @@ int main(int argc, char *argv[]){
         p1name = argv[2];
         p2name = argv[3];
 
-        OpenFile(p1name);
-        OpenFile(p2name);
+        char playerone[10][10];
+        OpenFile(p1name, playerone);
+        PrintBoard(playerone);
+
+        char playertwo[10][10];
+        OpenFile(p2name, playertwo);
+        PrintBoard(playertwo);
+
+        if (gamemode[1] == *"a"){
+            printf("Gamemode: Automated");
+        }
+        else if (gamemode[1] == *"v"){
+            printf("Gamemode: Vesus");
+        }
+        else {
+            printf("Error: gamemode is incorrect");
+            printf("Something with the boat settings went wrong");
+            exit(1);
+        }
 
     }
     else{
         printf("Error: Console Input is incorrect");
-        return 0;
+        exit(1);
     }
     return 0;
 }
 
-int Input(char *text){
-    int value;
-    printf("%s", text);
-    scanf("%d", &value);
-    return value;
-}
-
-void OpenFile(char filename[]){
+void OpenFile(char filename[20], char player[10][10]){
     char str[MAXCHAR];
     files = fopen(filename, "r");
     
@@ -47,10 +56,9 @@ void OpenFile(char filename[]){
     }
     else{
         int counter = 1;
-        char playerboard[10][10];
-        for (int a = 0; a < sizeof(playerboard); a++){
-            for (int b = 0; b < sizeof(playerboard[a]); b++){
-                playerboard[a][b] = *"_";
+        for (int a = 0; a < sizeof(*player); a++){
+            for (int b = 0; b < sizeof(player[a]); b++){
+                player[a][b] = *"_";
             }
         }
 
@@ -93,24 +101,22 @@ void OpenFile(char filename[]){
                 }
             }
             printf("boat: %s length: %d column: %c row: %d orientation: %c\n", type, len, col, row, orient);
-            error = AddBoat(type, len, col, row, orient, playerboard);
+            error = AddBoat(type, len, col, row, orient, player);
             if (error == false){
                 //printf("Boat added correctly\n");
             }
             else {
                 printf("Something with the boat settings went wrong");
                 exit(1);
-                break;
             }
             
             counter = 1;
         }
-        PrintBoard(playerboard);
         fclose(files);
     }
 }
 
-bool AddBoat(char *type, int len, char col, int row,char orient, char playerboard[10][10]){
+bool AddBoat(char type[30], int len, char col, int row,char orient, char playerboard[10][10]){
     int col_to_num = (int)col - 65;
     bool pos;
     bool error = false;
