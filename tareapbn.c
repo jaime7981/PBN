@@ -5,8 +5,11 @@
 #define MAXCHAR 1000
 
 void OpenFile(char filename[20], char playerone[10][10]);
-void PrintBoard(char playerboard[10][10]);
 bool AddBoat(char type[30], int len, char col, int row, char orient, char playerboard[10][10]);
+void PrintBoard(char playerboard[10][10]);
+void UserInput(char user_input[5]);
+void RowColumns(int row, int col, char user_input[5]);
+void Game();
 FILE *files;
 
 int main(int argc, char *argv[]){
@@ -28,10 +31,12 @@ int main(int argc, char *argv[]){
         PrintBoard(playertwo);
 
         if (gamemode[1] == *"a"){
-            printf("Gamemode: Automated");
+            printf("Gamemode: Automated\n");
+            Game();
         }
         else if (gamemode[1] == *"v"){
-            printf("Gamemode: Vesus");
+            printf("Gamemode: Vesus\n");
+            Game();
         }
         else {
             printf("Error: gamemode is incorrect");
@@ -181,6 +186,50 @@ void PrintBoard(char playerboard[10][10]){
     printf("  A  B  C  D  E  F  G  H  I  J\n");
 }
 
+void UserInput(char user_input[5]){
+    printf("Shoot your enemy! exit game(e)\n");
+    fgets(user_input, 100, stdin);
+    for (int a = 0; a < strlen(user_input); a++){
+        if (user_input[a] == *","){
+
+        }
+    }
+}
+
+void RowColumns(int row, int col, char user_input[5]){
+    for (int a = 0; a < strlen(user_input); a++){
+        int inputaux = (int)user_input[a];
+        if (inputaux == 101){
+            exit(0);
+        }
+        else if (inputaux < 58 && inputaux > 47){
+            row = inputaux - 48;
+        }
+        else if (inputaux < 75 && inputaux > 64) {
+            col = inputaux - 65;
+        }
+    }
+    printf("col: %d row: %d\n", col, row);
+}
+
 void Game(){
-    
+    bool continue_game = true;
+
+    while (continue_game) {
+        bool player_one_turn = true;
+        char user_input[5];
+        int inputrow;
+        int inputcols;
+
+        if (player_one_turn){
+            UserInput(user_input);
+            RowColumns(inputrow, inputcols, user_input);
+            player_one_turn = false;
+        }
+        else {
+            UserInput(user_input);
+            RowColumns(inputrow, inputcols, user_input);
+            player_one_turn = true;
+        }
+    }
 }
