@@ -3,12 +3,14 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h> //Para pasar de Mayus a Mins toupper tulower
+#include <time.h>
+
 #define MAXCHAR 1000
 
 void OpenFile(char filename[20], char playerone[10][10]);
 bool AddBoat(char type[30], int len, char col, int row, char orient, char playerboard[10][10]);
 void PrintBoard(char playerboard[10][10]);
-void UserInput(char user_input[4]);
+bool UserInput(char user_input[4]);
 void RowColumns(int row, int col, char user_input[4]);
 
 //Agrege parametros para ir jugando con los tableros de ataque y los del barco
@@ -16,6 +18,7 @@ void RowColumns(int row, int col, char user_input[4]);
 // Esta funcion no se va a poder usar en juego automatizado, pq el bot va a tender a ingresar coordenadas anteriores
 // HAbria que crae una funcion parecida y que le diga al bot que no use esas coordenadas
 void Game(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10]);
+void AutomatedGame(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10]);
 
 
 //Funciones Jota
@@ -24,7 +27,7 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
 void BoardAux(char player[10][10]); 
 
 //Para verificar que el tiro hizo impacto, hundido o agua y tambien que avise si tiro un lugar ya atacado (pierde turno)
-void VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10]);
+bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10]);
 
 //Lo mismo que RowColumns solo que las separe porque no se me asignaban a las variables
 int Row(int row, char user_input[5]);
@@ -47,21 +50,20 @@ int main(int argc, char *argv[]){
         char playerone[10][10];
         OpenFile(p1name, playerone);
         PrintBoard(playerone);
+
         char player1field[10][10];//para tablero de ataque
         BoardAux(player1field); 
 
         char playertwo[10][10];
         OpenFile(p2name, playertwo);
         PrintBoard(playertwo);
+
         char player2field[10][10];//para tablero de ataque
         BoardAux(player2field);
 
         if (gamemode[1] == *"a"){
             printf("Gamemode: Automated\n");
-            /* Falta trabjar en este modo porque no corre el programa si no hay posicionesJ2.txt
-            Faltaria hacer una funcion que posicione los barcos en forma aleatoria por parte del bot
-            */
-            Game(player1field,player2field,playerone,playertwo);
+            AutomatedGame(player1field,player2field,playerone,playertwo);
         }
         else if (gamemode[1] == *"v"){
             printf("Gamemode: Vesus\n");
@@ -216,23 +218,31 @@ void PrintBoard(char playerboard[10][10]){
 }
 
 
-void UserInput(char user_input[4]){
+bool UserInput(char user_input[4]){
     printf("Shoot your enemy! exit game(e)\n");
     fgets(user_input, 100, stdin);
     
     if(user_input[0]==101) exit(0);
     	
     else {
-    	user_input[0]= toupper(user_input[0]); //Si no ingreso la columna el Mayus, que lo cuente igual
-	if(user_input[0]>64 && user_input[0]<75 ){
-	}
-	else printf("ERORR no pusiste bien el parametro de columna");
-	
-	if(user_input[2]>47 && user_input[2]<58){
-	}
-	else printf("ERROR:No pusiste bien el parametro de fila");
+    	user_input[0] = toupper(user_input[0]); //Si no ingreso la columna el Mayus, que lo cuente igual
+        if(user_input[0]>64 && user_input[0]<75 ){
+            
+        }
+        else {
+            printf("ERORR no pusiste bien el parametro de columna\n");
+            return false;
+        }
+        if(user_input[2]>47 && user_input[2]<58){
+            
+        }
+        else {
+            printf("ERROR:No pusiste bien el parametro de fila\n");
+            return false;
+        }
     }
-    
+
+    return true;
 }
 
 void RowColumns(int row, int col, char user_input[4]){
@@ -265,28 +275,86 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
         char user_input[5];
         int inputrow;
         int inputcol;
+        bool inputcheck = true;
 
         if (player_one_turn){
         	printf("Turno del jugador 1:\n");
-        	PrintBoard(player1field);
-		UserInput(user_input);
-		inputrow= Row(inputrow, user_input);
-		inputcol= Columns(inputcol,user_input);
-		VerifyShoot(inputrow,inputcol,player1field,playertwo);
-		player_one_turn = false;
+            PrintBoard(player1field);
+            while (true){
+                UserInput(user_input);
+                inputrow = Row(inputrow, user_input);
+                inputcol = Columns(inputcol,user_input);
+                inputcheck = VerifyShoot(inputrow,inputcol,player1field,playertwo);
+                if (inputcheck){
+                    break;
+                }
+            }
+            player_one_turn = false;
         }
         else {
         	printf("Turno del jugador 2:\n");
         	PrintBoard(player2field); //Que muestre el tablero de ataque
-		UserInput(user_input); 
-		inputrow= Row(inputrow, user_input);
-		inputcol= Columns(inputcol,user_input);
-		VerifyShoot(inputrow,inputcol,player2field,playerone); //Que verifique el tiro
-		player_one_turn = true; //Cambia de turno
+            while (true){
+                UserInput(user_input);
+                inputrow = Row(inputrow, user_input);
+                inputcol = Columns(inputcol,user_input);
+                inputcheck = VerifyShoot(inputrow,inputcol,player2field,playerone);
+                if (inputcheck){
+                    break;
+                }
+            }
+            player_one_turn = true; //Cambia de turno
         }
     }
 }
 
+void AutomatedGame(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10]){
+    bool continue_game = true;
+    bool player_one_turn = true;
+    bool check_automated_shot = true;
+
+    srand(time(0));
+
+    while (continue_game) {
+        char user_input[5];
+        int inputrow;
+        int inputcol;
+
+        int pcinputrow;
+        int pcinputcol;
+        bool inputcheck = true;
+
+        if (player_one_turn){
+        	printf("Turno del jugador 1:\n");
+            PrintBoard(player1field);
+            while (true){
+                UserInput(user_input);
+                inputrow = Row(inputrow, user_input);
+                inputcol = Columns(inputcol,user_input);
+                inputcheck = VerifyShoot(inputrow,inputcol,player1field,playertwo);
+                if (inputcheck){
+                    break;
+                }
+            }
+            player_one_turn = false;
+        }
+        else {
+        	printf("PC plays:\n");
+        	PrintBoard(player2field); //Que muestre el tablero de ataque
+            while (true)
+            {
+                pcinputrow = rand()%9;
+                pcinputcol = rand()%9;
+                check_automated_shot = VerifyShoot(inputrow,inputcol,player2field,playerone); //Que verifique el tiro
+                if (check_automated_shot == true){
+                    break;
+                }
+            }
+            player_one_turn = true; //Cambia de turno
+        
+        }
+    }
+}
 
 
 // Funcion de tablero de ataque
@@ -306,7 +374,7 @@ void BoardAux(char player[10][10]){
 }
 
 // Funcion verificadora de tiro
-void VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10]){
+bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10]){
 	if(player_enemy[inputrow][inputcols]==95){//No le achunto  //95 es _
 		if(player[inputrow][inputcols]==95){//Que verifique que no haya marcado la misma posicion antes
 			printf("Agua!\n");
@@ -320,6 +388,7 @@ void VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_e
 			printf("\n");
 			printf("--------------------------\n");
 			printf("\n");
+            return false;
 		}	
 	}
 	else {
@@ -338,10 +407,11 @@ void VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_e
 			printf("\n");
 			printf("--------------------------\n");
 			printf("\n");
+            return false;
 			}
 		}
-		
 	}
+    return true;
 }
 
 
@@ -349,13 +419,7 @@ void VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_e
 int Row(int row, char user_input[4]){
 	return user_input[2]-48;
 }
+
 int Columns(int col, char user_input[4]){
 	return (int)user_input[0]-65;
 }
-
-
-
-
-
-
-
