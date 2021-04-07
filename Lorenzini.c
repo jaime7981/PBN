@@ -27,7 +27,9 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
 void BoardAux(char player[10][10]); 
 
 //Para verificar que el tiro hizo impacto, hundido o agua y tambien que avise si tiro un lugar ya atacado (pierde turno)
-bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int player_shoot);
+bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int player_shoot, int takendown);
+
+int BoatDown(int inputrow, int inputcols, char player_enemy[10][10]);
 
 //Lo mismo que RowColumns solo que las separe porque no se me asignaban a las variables
 int Row(int row, char user_input[5]);
@@ -290,6 +292,9 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
 
     int pone_shoots = 0;
     int ptwo_shoots = 0;
+
+    int pone_TakenDown = 0;
+    int ptwo_TakenDown = 0;
     PrintBoard(player1field);
 
     while (continue_game) {
@@ -297,13 +302,14 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
         int inputrow;
         int inputcol;
         
+        printf("P1 Boats taken down: %d\n", pone_TakenDown);
 
         if (player_one_turn){
             printf("\nTurno del jugador 1:\n");
             inputcheck = UserInput(user_input);
             inputrow = Row(inputrow, user_input);
             inputcol = Columns(inputcol,user_input);
-            shootcheck = VerifyShoot(inputrow,inputcol,player1field,playertwo, pone_shoots);
+            shootcheck = VerifyShoot(inputrow,inputcol,player1field,playertwo, pone_shoots, pone_TakenDown);
 
             if (inputcheck == false || shootcheck == false){
                 player_one_turn = true;
@@ -321,7 +327,7 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
                 inputcheck = UserInput(user_input);
                 inputrow = Row(inputrow, user_input);
                 inputcol = Columns(inputcol,user_input);
-                shootcheck = VerifyShoot(inputrow,inputcol,player2field,playerone, ptwo_shoots);
+                shootcheck = VerifyShoot(inputrow,inputcol,player2field,playerone, ptwo_shoots, ptwo_TakenDown);
                 if (inputcheck){
                     break;
                 }
@@ -344,8 +350,12 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
     bool player_one_turn = true;
     bool check_automated_shot = true;
     bool pass_turn = true;
+
     int pone_shoots = 0;
     int ptwo_shoots = 0;
+
+    int pone_TakenDown = 0;
+    int ptwo_TakenDown = 0;
 
     bool inputcheck;
     bool shootcheck;
@@ -360,12 +370,14 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
         int pcinputrow;
         int pcinputcol;
 
+        printf("P1 Boats taken down: %d\n", pone_TakenDown);
+        
         if (player_one_turn){
             printf("\nTurno del jugador 1:\n");
             inputcheck = UserInput(user_input);
             inputrow = Row(inputrow, user_input);
             inputcol = Columns(inputcol,user_input);
-            shootcheck = VerifyShoot(inputrow,inputcol,player1field,playertwo, pone_shoots);
+            shootcheck = VerifyShoot(inputrow,inputcol,player1field,playertwo, pone_shoots, pone_TakenDown);
 
             if (inputcheck == false || shootcheck == false){
                 player_one_turn = true;
@@ -383,7 +395,7 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
             {
                 pcinputrow = rand()%9;
                 pcinputcol = rand()%9;
-                check_automated_shot = VerifyShoot(inputrow,inputcol,player2field,playerone, ptwo_shoots); //Que verifique el tiro
+                check_automated_shot = VerifyShoot(inputrow,inputcol,player2field,playerone, ptwo_shoots, ptwo_TakenDown); //Que verifique el tiro
                 if (check_automated_shot == true){
                     break;
                 }
@@ -412,7 +424,7 @@ void BoardAux(char player[10][10]){
 }
 
 // Funcion verificadora de tiro
-bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int player_shoot){
+bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int player_shoot, int takendown){
     PrintBoard(player_enemy);
 	if(player_enemy[inputrow][inputcols]==95){//No le achunto  //95 es _
 		if(player[inputrow][inputcols]==95){//Que verifique que no haya marcado la misma posicion antes
@@ -441,100 +453,17 @@ bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_e
 				printf("\n");
 				player[inputrow][inputcols]=*"X";
 
-                int counter;
-                int boats_X = 1;
-                int boats__ = 0;
-                bool space = false;
+                int enemyX;
+                int playerX;
 
-                if (inputrow < 9){ //checkea si hay X abajo
-                    counter = 1;
-                    if (player_enemy[inputrow + counter][inputcols] == 88){
-                        while (true) {
-                            if (player_enemy[inputrow + counter][inputcols] == 95){ 
-                                boats__ ++;
-                                space = false;
-                                break;
-                            }
-                            else if (player_enemy[inputrow + counter][inputcols] == 46) {
-                                break;
-                            }
-                            else if (player_enemy[inputrow + counter][inputcols] == 88) {
-                                boats_X ++;
-                            }
-                            else {
-                                break;
-                            }
-                            counter ++;
-                        }
-                    }
+                enemyX = BoatDown(inputrow, inputcols, player_enemy);
+                playerX = BoatDown(inputrow, inputcols, player);
+
+                printf("Enemy X: %d\nPlayer X: %d\n", enemyX, playerX);
+                if (enemyX == playerX){
+                    printf("Boat Down!!");
+                    takendown ++;
                 }
-                if (inputcols > 0) { //checkea si hay X arriba
-                    counter = 1;
-                    if (player_enemy[inputrow - counter][inputcols] == 88){ // izquierda
-                        while (true) {
-                            if (player_enemy[inputrow - counter][inputcols] == 95){
-                                boats__ ++;
-                                space = false;
-                                break;
-                            }
-                            else if (player_enemy[inputrow - counter][inputcols] == 46) {
-                                break;
-                            }
-                            else if (player_enemy[inputrow - counter][inputcols] == 88) {
-                                boats_X ++;
-                            }
-                            else {
-                                break;
-                            }
-                            counter ++;
-                        }
-                    }
-                }
-                if (inputcols < 9){ //checkea si hay X a la derecha
-                    counter = 1;
-                    if (player_enemy[inputrow][inputcols + counter] == 88){ // ve si a la derecha hay X
-                        while (true) {
-                            if (player_enemy[inputrow][inputcols + counter] == 95){ 
-                                boats__ ++;
-                                space = false;
-                                break;
-                            }
-                            else if (player_enemy[inputrow][inputcols + counter] == 46) {
-                                break;
-                            }
-                            else if (player_enemy[inputrow][inputcols + counter] == 88) {
-                                boats_X ++;
-                            }
-                            else {
-                                break;
-                            }
-                            counter ++;
-                        }
-                    }
-                }
-                if (inputcols > 0) { //checkea si hay X a la izquierda
-                    counter = 1;
-                    if (player_enemy[inputrow][inputcols - counter] == 88){ // izquierda
-                        while (true) {
-                            if (player_enemy[inputrow][inputcols - counter] == 95){
-                                boats__ ++;
-                                space = false;
-                                break;
-                            }
-                            else if (player_enemy[inputrow][inputcols - counter] == 46) {
-                                break;
-                            }
-                            else if (player_enemy[inputrow][inputcols - counter] == 88) {
-                                boats_X ++;
-                            }
-                            else {
-                                break;
-                            }
-                            counter ++;
-                        }
-                    }
-                }
-                printf("X: %d\n_: %d\n", boats_X, boats__);
 			}
 			else{
 			printf("Ya disparaste en esa zona!\n");
@@ -546,6 +475,103 @@ bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_e
 		}
 	}
     return true;
+}
+
+int BoatDown(int inputrow, int inputcols, char player_enemy[10][10]){
+    int counter;
+    int boats_X = 1;
+    int boats__ = 0;
+    bool space = false;
+
+    if (inputrow < 9){ //checkea si hay X abajo
+        counter = 1;
+        if (player_enemy[inputrow + counter][inputcols] == 88){
+            while (true) {
+                if (player_enemy[inputrow + counter][inputcols] == 95){ 
+                    boats__ ++;
+                    space = false;
+                    break;
+                }
+                else if (player_enemy[inputrow + counter][inputcols] == 46) {
+                    break;
+                }
+                else if (player_enemy[inputrow + counter][inputcols] == 88) {
+                    boats_X ++;
+                }
+                else {
+                    break;
+                }
+                counter ++;
+            }
+        }
+    }
+    if (inputcols > 0) { //checkea si hay X arriba
+        counter = 1;
+        if (player_enemy[inputrow - counter][inputcols] == 88){ // izquierda
+            while (true) {
+                if (player_enemy[inputrow - counter][inputcols] == 95){
+                    boats__ ++;
+                    space = false;
+                    break;
+                }
+                else if (player_enemy[inputrow - counter][inputcols] == 46) {
+                    break;
+                }
+                else if (player_enemy[inputrow - counter][inputcols] == 88) {
+                    boats_X ++;
+                }
+                else {
+                    break;
+                }
+                counter ++;
+            }
+        }
+    }
+    if (inputcols < 9){ //checkea si hay X a la derecha
+        counter = 1;
+        if (player_enemy[inputrow][inputcols + counter] == 88){ // ve si a la derecha hay X
+            while (true) {
+                if (player_enemy[inputrow][inputcols + counter] == 95){ 
+                    boats__ ++;
+                    space = false;
+                    break;
+                }
+                else if (player_enemy[inputrow][inputcols + counter] == 46) {
+                    break;
+                }
+                else if (player_enemy[inputrow][inputcols + counter] == 88) {
+                    boats_X ++;
+                }
+                else {
+                    break;
+                }
+                counter ++;
+            }
+        }
+    }
+    if (inputcols > 0) { //checkea si hay X a la izquierda
+        counter = 1;
+        if (player_enemy[inputrow][inputcols - counter] == 88){ // izquierda
+            while (true) {
+                if (player_enemy[inputrow][inputcols - counter] == 95){
+                    boats__ ++;
+                    space = false;
+                    break;
+                }
+                else if (player_enemy[inputrow][inputcols - counter] == 46) {
+                    break;
+                }
+                else if (player_enemy[inputrow][inputcols - counter] == 88) {
+                    boats_X ++;
+                }
+                else {
+                    break;
+                }
+                counter ++;
+            }
+        }
+    }
+    return boats_X;
 }
 
 
