@@ -7,18 +7,17 @@
 
 #define MAXCHAR 1000
 
-int OpenFile(char filename[20], char playerone[10][10]);
+int OpenFile(char filename[20], char playerone[10][10], int *p2_X_counter);
 bool AddBoat(char type[30], int len, char col, int row, char orient, char playerboard[10][10]);
 void PrintBoard(char playerboard[10][10]);
 bool UserInput(char user_input[4]);
-void RowColumns(int row, int col, char user_input[4]);
 
 //Agrege parametros para ir jugando con los tableros de ataque y los del barco
 
 // Esta funcion no se va a poder usar en juego automatizado, pq el bot va a tender a ingresar coordenadas anteriores
 // HAbria que crae una funcion parecida y que le diga al bot que no use esas coordenadas
-void Game(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10]);
-void AutomatedGame(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10]);
+void Game(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10], int Counters[4]);
+void AutomatedGame(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10], int Counters[4]);
 
 
 //Funciones Jota
@@ -27,9 +26,9 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
 void BoardAux(char player[10][10]); 
 
 //Para verificar que el tiro hizo impacto, hundido o agua y tambien que avise si tiro un lugar ya atacado (pierde turno)
-bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int player_shoot, int takendown);
+bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int *takendown, int Counters[4]);
 
-int BoatDown(int inputrow, int inputcols, char player_enemy[10][10]);
+int BoatDown(int inputrow, int inputcols, char player_enemy[10][10], char player[10][10]);
 
 //Lo mismo que RowColumns solo que las separe porque no se me asignaban a las variables
 int Row(int row, char user_input[5]);
@@ -45,6 +44,8 @@ int main(int argc, char *argv[]){
     char *p2name;
     int p1_boatcounter = 0;
     int p2_boatcounter = 0;
+    int p1_X_counter = 0;
+    int p2_X_counter = 0;
 
     if (argc == 4){
         gamemode = argv[1];
@@ -52,25 +53,26 @@ int main(int argc, char *argv[]){
         p2name = argv[3];
 
         char playerone[10][10];
-        p1_boatcounter = OpenFile(p1name, playerone);
+        p1_boatcounter = OpenFile(p1name, playerone, &p1_X_counter);
         //PrintBoard(playerone);
         char player1field[10][10];//para tablero de ataque
         BoardAux(player1field); 
 
         char playertwo[10][10];
-        p2_boatcounter = OpenFile(p2name, playertwo);
+        p2_boatcounter = OpenFile(p2name, playertwo, &p2_X_counter);
         //PrintBoard(playertwo);
-
         char player2field[10][10];//para tablero de ataque
         BoardAux(player2field);
 
+        int Counters[4] = { p1_boatcounter, p1_X_counter, p2_boatcounter, p2_X_counter};
+
         if (gamemode[1] == *"a"){
             printf("Gamemode: Automated\n");
-            AutomatedGame(player1field,player2field,playerone,playertwo);
+            AutomatedGame(player1field,player2field,playerone,playertwo, Counters);
         }
         else if (gamemode[1] == *"v"){
             printf("Gamemode: Vesus\n");
-            Game(player1field,player2field,playerone,playertwo);
+            Game(player1field,player2field,playerone,playertwo, Counters);
         }
         else {
             printf("Error: gamemode is incorrect");
@@ -85,7 +87,7 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-int OpenFile(char filename[20], char player[10][10]){
+int OpenFile(char filename[20], char player[10][10], int *p_X_counter){
     char str[MAXCHAR];
     files = fopen(filename, "r");
     int boatcounter = 0;
@@ -157,6 +159,7 @@ int OpenFile(char filename[20], char player[10][10]){
         fclose(files);
     }
     //printf("Player: %d X\nPlayer boats: %d\n", X_counter, boatcounter);
+    *p_X_counter = X_counter; 
     return boatcounter;
 }
 
@@ -225,13 +228,30 @@ void PrintBoard(char playerboard[10][10]){
     printf("  A  B  C  D  E  F  G  H  I  J\n");
 }
 
+// Funcion de tablero de ataque
+void BoardAux(char player[10][10]){
+	
+	
+	//printf("\n  A  B  C  D  E  F  G  H  I  J\n");
+	for(int i=0;i<10;i++){
+		//printf("%d",i);
+		for(int j=0;j<10;j++){
+			player[i][j]=*"_";
+			//printf("[%c]",player[i][j]);
+		}
+		//printf("%d\n",i);
+	}
+	//printf("  A  B  C  D  E  F  G  H  I  J\n");
+}
+
+
 
 bool UserInput(char user_input[4]){
 
-    printf("\nShoot your enemy! exit game(e)\n");
+    printf("\nShoot your enemy! exit game(s)\n");
     fgets(user_input, 100, stdin);
     
-    if(user_input[0]==101){
+    if(user_input[0]==115){ // 115 es s
         exit(0);
     }
     if (strlen(user_input) > 4){
@@ -259,39 +279,13 @@ bool UserInput(char user_input[4]){
     return true;
 }
 
-void RowColumns(int row, int col, char user_input[4]){
-    for (int a = 0; a < user_input[a]!=0; a++){
-        int inputaux = (int)user_input[a];
-        printf("%d\n",inputaux);
-        if (inputaux == 101){
-            exit(0);
-        }
-        else {
-        	if (inputaux < 58 && inputaux > 47){	
-            		row = inputaux - 48;
-            		break;
-        	}
-        	if (inputaux < 75 && inputaux > 64) {
-            		col = inputaux - 65;
-            		break;
-        	}	
-        }
-        
-    }
-    printf("col: %d row: %d\n", col, row);
-}
-
-
-void Game(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10]){
+void Game(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10], int Counters[4]){
     bool continue_game = true;
     bool player_one_turn = true;
     bool pass_turn = true;
 
     bool inputcheck;
     bool shootcheck;
-
-    int pone_shoots = 0;
-    int ptwo_shoots = 0;
 
     int pone_TakenDown = 0;
     int ptwo_TakenDown = 0;
@@ -301,15 +295,13 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
         char user_input[5];
         int inputrow;
         int inputcol;
-        
-        printf("P1 Boats taken down: %d\n", pone_TakenDown);
 
         if (player_one_turn){
             printf("\nTurno del jugador 1:\n");
             inputcheck = UserInput(user_input);
             inputrow = Row(inputrow, user_input);
             inputcol = Columns(inputcol,user_input);
-            shootcheck = VerifyShoot(inputrow,inputcol,player1field,playertwo, pone_shoots, pone_TakenDown);
+            shootcheck = VerifyShoot(inputrow, inputcol, player1field, playertwo, &pone_TakenDown, Counters);
 
             if (inputcheck == false || shootcheck == false){
                 player_one_turn = true;
@@ -327,7 +319,7 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
                 inputcheck = UserInput(user_input);
                 inputrow = Row(inputrow, user_input);
                 inputcol = Columns(inputcol,user_input);
-                shootcheck = VerifyShoot(inputrow,inputcol,player2field,playerone, ptwo_shoots, ptwo_TakenDown);
+                shootcheck = VerifyShoot(inputrow, inputcol, player2field, playerone, &ptwo_TakenDown, Counters);
                 if (inputcheck){
                     break;
                 }
@@ -345,7 +337,7 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
     }
 }
 
-void AutomatedGame(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10]){
+void AutomatedGame(char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10], int Counters[4]){
     bool continue_game = true;
     bool player_one_turn = true;
     bool check_automated_shot = true;
@@ -361,6 +353,7 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
     bool shootcheck;
 
     srand(time(0));
+    PrintBoard(player1field);
 
     while (continue_game) {
         char user_input[4];
@@ -369,15 +362,13 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
 
         int pcinputrow;
         int pcinputcol;
-
-        printf("P1 Boats taken down: %d\n", pone_TakenDown);
         
         if (player_one_turn){
             printf("\nTurno del jugador 1:\n");
             inputcheck = UserInput(user_input);
             inputrow = Row(inputrow, user_input);
             inputcol = Columns(inputcol,user_input);
-            shootcheck = VerifyShoot(inputrow,inputcol,player1field,playertwo, pone_shoots, pone_TakenDown);
+            shootcheck = VerifyShoot(inputrow, inputcol, player1field, playertwo, &pone_TakenDown, Counters);
 
             if (inputcheck == false || shootcheck == false){
                 player_one_turn = true;
@@ -395,7 +386,7 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
             {
                 pcinputrow = rand()%9;
                 pcinputcol = rand()%9;
-                check_automated_shot = VerifyShoot(inputrow,inputcol,player2field,playerone, ptwo_shoots, ptwo_TakenDown); //Que verifique el tiro
+                check_automated_shot = VerifyShoot(inputrow, inputcol, player2field, playerone, &ptwo_TakenDown, Counters); //Que verifique el tiro
                 if (check_automated_shot == true){
                     break;
                 }
@@ -406,26 +397,8 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
     }
 }
 
-
-// Funcion de tablero de ataque
-void BoardAux(char player[10][10]){
-	
-	
-	//printf("\n  A  B  C  D  E  F  G  H  I  J\n");
-	for(int i=0;i<10;i++){
-		//printf("%d",i);
-		for(int j=0;j<10;j++){
-			player[i][j]=*"_";
-			//printf("[%c]",player[i][j]);
-		}
-		//printf("%d\n",i);
-	}
-	//printf("  A  B  C  D  E  F  G  H  I  J\n");
-}
-
 // Funcion verificadora de tiro
-bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int player_shoot, int takendown){
-    PrintBoard(player_enemy);
+bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int *takendown, int Counters[4]){
 	if(player_enemy[inputrow][inputcols]==95){//No le achunto  //95 es _
 		if(player[inputrow][inputcols]==95){//Que verifique que no haya marcado la misma posicion antes
 			printf("Agua!\n");
@@ -456,13 +429,22 @@ bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_e
                 int enemyX;
                 int playerX;
 
-                enemyX = BoatDown(inputrow, inputcols, player_enemy);
-                playerX = BoatDown(inputrow, inputcols, player);
+                enemyX = BoatDown(inputrow, inputcols, player_enemy, player);
+                playerX = BoatDown(inputrow, inputcols, player, player_enemy);
 
-                printf("Enemy X: %d\nPlayer X: %d\n", enemyX, playerX);
-                if (enemyX == playerX){
+                //printf("Enemy X: %d\nPlayer X: %d\n", enemyX, playerX);
+                if (enemyX == playerX){ // completar todas las X para hundir un barco
                     printf("Boat Down!!");
-                    takendown ++;
+                    *takendown = *takendown + 1;
+
+                    if (*takendown == Counters[0]){ // checkea la cantidad de barcos
+                        printf("Player One Wins");
+                        exit(0);
+                    }
+                    else if (*takendown == Counters[2]){
+                        printf("Player Two Wins");
+                        exit(0);
+                    }
                 }
 			}
 			else{
@@ -477,18 +459,19 @@ bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_e
     return true;
 }
 
-int BoatDown(int inputrow, int inputcols, char player_enemy[10][10]){
+int BoatDown(int inputrow, int inputcols, char player_enemy[10][10],  char player[10][10]){
     int counter;
     int boats_X = 1;
     int boats__ = 0;
     bool space = false;
+    bool tangent_boats = false;
 
     if (inputrow < 9){ //checkea si hay X abajo
         counter = 1;
         if (player_enemy[inputrow + counter][inputcols] == 88){
             while (true) {
                 if (player_enemy[inputrow + counter][inputcols] == 95){ 
-                    boats__ ++;
+                    boats__ = boats__ + 1;
                     space = false;
                     break;
                 }
@@ -510,7 +493,7 @@ int BoatDown(int inputrow, int inputcols, char player_enemy[10][10]){
         if (player_enemy[inputrow - counter][inputcols] == 88){ // izquierda
             while (true) {
                 if (player_enemy[inputrow - counter][inputcols] == 95){
-                    boats__ ++;
+                    boats__ = boats__ + 1;
                     space = false;
                     break;
                 }
@@ -532,7 +515,7 @@ int BoatDown(int inputrow, int inputcols, char player_enemy[10][10]){
         if (player_enemy[inputrow][inputcols + counter] == 88){ // ve si a la derecha hay X
             while (true) {
                 if (player_enemy[inputrow][inputcols + counter] == 95){ 
-                    boats__ ++;
+                    boats__ = boats__ + 1;
                     space = false;
                     break;
                 }
@@ -554,7 +537,7 @@ int BoatDown(int inputrow, int inputcols, char player_enemy[10][10]){
         if (player_enemy[inputrow][inputcols - counter] == 88){ // izquierda
             while (true) {
                 if (player_enemy[inputrow][inputcols - counter] == 95){
-                    boats__ ++;
+                    boats__ = boats__ + 1;
                     space = false;
                     break;
                 }
@@ -571,6 +554,14 @@ int BoatDown(int inputrow, int inputcols, char player_enemy[10][10]){
             }
         }
     }
+
+    if (boats__ > 2){
+        tangent_boats = true;
+    }
+    else{
+        tangent_boats = false;
+    }
+
     return boats_X;
 }
 
