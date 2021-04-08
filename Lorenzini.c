@@ -26,7 +26,7 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
 void BoardAux(char player[10][10]); 
 
 //Para verificar que el tiro hizo impacto, hundido o agua y tambien que avise si tiro un lugar ya atacado (pierde turno)
-bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int *takendown, int Counters[4]);
+bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int *takendown, int Counters[4], int *p_xs);
 
 int BoatDown(int inputrow, int inputcols, char player_enemy[10][10], char player[10][10]);
 
@@ -289,6 +289,9 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
 
     int pone_TakenDown = 0;
     int ptwo_TakenDown = 0;
+
+    int p1_Xs = 0;
+    int p2_Xs = 0;
     PrintBoard(player1field);
 
     while (continue_game) {
@@ -301,7 +304,7 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
             inputcheck = UserInput(user_input);
             inputrow = Row(inputrow, user_input);
             inputcol = Columns(inputcol,user_input);
-            shootcheck = VerifyShoot(inputrow, inputcol, player1field, playertwo, &pone_TakenDown, Counters);
+            shootcheck = VerifyShoot(inputrow, inputcol, player1field, playertwo, &pone_TakenDown, Counters, &p1_Xs);
 
             if (inputcheck == false || shootcheck == false){
                 player_one_turn = true;
@@ -319,7 +322,7 @@ void Game(char player1field[10][10],char player2field[10][10],char playerone[10]
                 inputcheck = UserInput(user_input);
                 inputrow = Row(inputrow, user_input);
                 inputcol = Columns(inputcol,user_input);
-                shootcheck = VerifyShoot(inputrow, inputcol, player2field, playerone, &ptwo_TakenDown, Counters);
+                shootcheck = VerifyShoot(inputrow, inputcol, player2field, playerone, &ptwo_TakenDown, Counters, &p2_Xs);
                 if (inputcheck){
                     break;
                 }
@@ -343,11 +346,11 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
     bool check_automated_shot = true;
     bool pass_turn = true;
 
-    int pone_shoots = 0;
-    int ptwo_shoots = 0;
-
     int pone_TakenDown = 0;
     int ptwo_TakenDown = 0;
+
+    int p1_Xs = 0;
+    int p2_Xs = 0;
 
     bool inputcheck;
     bool shootcheck;
@@ -368,7 +371,7 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
             inputcheck = UserInput(user_input);
             inputrow = Row(inputrow, user_input);
             inputcol = Columns(inputcol,user_input);
-            shootcheck = VerifyShoot(inputrow, inputcol, player1field, playertwo, &pone_TakenDown, Counters);
+            shootcheck = VerifyShoot(inputrow, inputcol, player1field, playertwo, &pone_TakenDown, Counters, &p1_Xs);
 
             if (inputcheck == false || shootcheck == false){
                 player_one_turn = true;
@@ -386,7 +389,7 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
             {
                 pcinputrow = rand()%9;
                 pcinputcol = rand()%9;
-                check_automated_shot = VerifyShoot(inputrow, inputcol, player2field, playerone, &ptwo_TakenDown, Counters); //Que verifique el tiro
+                check_automated_shot = VerifyShoot(inputrow, inputcol, player2field, playerone, &ptwo_TakenDown, Counters, &p2_Xs); //Que verifique el tiro
                 if (check_automated_shot == true){
                     break;
                 }
@@ -398,7 +401,7 @@ void AutomatedGame(char player1field[10][10],char player2field[10][10],char play
 }
 
 // Funcion verificadora de tiro
-bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int *takendown, int Counters[4]){
+bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10], int *takendown, int Counters[4], int *p_xs){
 	if(player_enemy[inputrow][inputcols]==95){//No le achunto  //95 es _
 		if(player[inputrow][inputcols]==95){//Que verifique que no haya marcado la misma posicion antes
 			printf("Agua!\n");
@@ -436,12 +439,21 @@ bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_e
                 if (enemyX == playerX){ // completar todas las X para hundir un barco
                     printf("Boat Down!!");
                     *takendown = *takendown + 1;
+                    *p_xs = *p_xs + playerX;
 
                     if (*takendown == Counters[0]){ // checkea la cantidad de barcos
                         printf("Player One Wins");
                         exit(0);
                     }
                     else if (*takendown == Counters[2]){
+                        printf("Player Two Wins");
+                        exit(0);
+                    }
+                    if (*p_xs == Counters[1]){
+                        printf("Player One Wins");
+                        exit(0);
+                    }
+                    else if (*p_xs == Counters[3]) { // checkea la cantidad de X
                         printf("Player Two Wins");
                         exit(0);
                     }
