@@ -441,19 +441,19 @@ bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_e
                     *takendown = *takendown + 1;
                     *p_xs = *p_xs + playerX;
 
-                    if (*takendown == Counters[0]){ // checkea la cantidad de barcos
+                    if (*takendown >= Counters[0]){ // checkea la cantidad de barcos
                         printf("Player One Wins");
                         exit(0);
                     }
-                    else if (*takendown == Counters[2]){
+                    else if (*takendown >= Counters[2]){
                         printf("Player Two Wins");
                         exit(0);
                     }
-                    if (*p_xs == Counters[1]){
+                    if (*p_xs >= Counters[1]){
                         printf("Player One Wins");
                         exit(0);
                     }
-                    else if (*p_xs == Counters[3]) { // checkea la cantidad de X
+                    else if (*p_xs >= Counters[3]) { // checkea la cantidad de X
                         printf("Player Two Wins");
                         exit(0);
                     }
