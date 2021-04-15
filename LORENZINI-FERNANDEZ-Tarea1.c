@@ -8,16 +8,16 @@
 #define MAXCHAR 1000
 
 int OpenFile(char filename[20], char playerone[10][10]);
-bool AddBoat(char type[30], int len, char col, int row, char orient, char playerboard[10][10]);
+bool AddBoat(char boatype[30],int len, char col, int row, char orient, char playerboard[10][10]);
 void PrintBoard(char playerboard[10][10]);
 bool UserInput(char user_input[4]);
 void Game(char filename1[10],char filename2[10],char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10], int Counters[2]);
 void AutomatedGame(char filenam1[10],char filename2[10],char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10], int Counters[2]);
 void BoardAux(char player[10][10]); 
 bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_enemy[10][10]);
-int BoatDown(char filename_enemy[10],int inputrow, int inputcols, char player_enemy[10][10],char playerfield[10][10], int *playerX);
-int Row(int row, char user_input[5]);
-int Columns(int col, char user_input[5]);
+int BoatDown(char filename_enemy[10],int inputrow, int inputcols,char playerfield[10][10], int *playerX);
+int Row(char user_input[5]);
+int Columns(char user_input[5]);
 
 
 
@@ -31,8 +31,8 @@ int main(int argc, char *argv[]){
     char *txt=".txt";
     int p1_boatcounter = 0;
     int p2_boatcounter = 0;
-    int p1_X_counter = 0;
-    int p2_X_counter = 0;
+    
+    
 
     if (argc == 4){
         gamemode = argv[1]; //modo de juego
@@ -96,14 +96,14 @@ int OpenFile(char filename[20], char player[10][10]){
         BoardAux(player);
 
         while (fgets(str, MAXCHAR, files) != NULL) {
-            char type[15];
+            char boatype[15];
             int len;
             char col;
             int row;
             char orient;
             bool error;
 
-            for (int i = 0; i <= sizeof(str); i++){
+            for (int i = 0; i <= (int)sizeof(str); i++){
                 char aux = str[i-1];
                 
                 if (str[i] == *";"){
@@ -111,10 +111,10 @@ int OpenFile(char filename[20], char player[10][10]){
                         case 1:
                             for (int j = 0; j < 15; j++){
                                 if (j < i){
-                                    type[j] = str[j];
+                                    boatype[j] = str[j];
                                 }
                                 else{
-                                    type[j] = *"";
+                                    boatype[j] = *"";
                                 }
                             }
                             break;
@@ -134,7 +134,7 @@ int OpenFile(char filename[20], char player[10][10]){
                 }
             }
             //printf("boat: %s length: %d column: %c row: %d orientation: %c\n", type, len, col, row, orient);
-            error = AddBoat(type, len, col, row, orient, player);
+            error = AddBoat(boatype,len, col, row, orient, player);
             X_counter += len;
             boatcounter ++;
             if (error == false){
@@ -153,12 +153,11 @@ int OpenFile(char filename[20], char player[10][10]){
     return boatcounter;
 }
 
-bool AddBoat(char type[30], int len, char col, int row,char orient, char playerboard[10][10]){
+bool AddBoat(char boatype[30],int len, char col, int row,char orient, char playerboard[10][10]){
     int col_to_num = (int)col - 65;
     bool pos;
     bool error = false;
     int counter = 0;
-
     if (orient == *"h"){
         pos = true;
     }
@@ -176,7 +175,7 @@ bool AddBoat(char type[30], int len, char col, int row,char orient, char playerb
                         if (counter < len){
                             col_to_num ++;
                             if (col_to_num >= 10){
-                                printf("Boat out of bounds\n");
+                                printf("%s out of bounds\n",boatype);
                                 error = true;
                                 break;
                             }
@@ -187,7 +186,7 @@ bool AddBoat(char type[30], int len, char col, int row,char orient, char playerb
                         if (counter < len){
                             row ++;
                             if (row >= 10){
-                                printf("Boat out of bounds\n");
+                                printf("%s out of bounds\n",boatype);
                                 error = true;
                                 break;
                             }
@@ -195,7 +194,7 @@ bool AddBoat(char type[30], int len, char col, int row,char orient, char playerb
                     }
                 }
                 else {
-                    printf("Boat already in place\n");
+                    printf("%s already in place\n",boatype);
                     error = true;
                     break;
                 }
@@ -210,7 +209,7 @@ void PrintBoard(char playerboard[10][10]){
     printf("\n  A  B  C  D  E  F  G  H  I  J\n");
     for (int i = 0; i < 10; i++){
         printf("%d", i);
-        for (int j = 0; j < sizeof(playerboard[i]); j++){
+        for (int j = 0; j < (int)sizeof(playerboard[i]); j++){
             printf("[%c]", playerboard[i][j]);
         }
         printf("%d\n", i);
@@ -269,7 +268,7 @@ bool UserInput(char user_input[4]){
 void Game(char filename1[10],char filename2[10],char player1field[10][10],char player2field[10][10],char playerone[10][10],char playertwo[10][10], int Counters[2]){
     bool continue_game = true;
     bool player_one_turn = true;
-    bool pass_turn = true;
+    //bool pass_turn = true;
 
     bool inputcheck;
     bool shootcheck;
@@ -283,21 +282,21 @@ void Game(char filename1[10],char filename2[10],char player1field[10][10],char p
         int inputcol;
         int enemyX;
         int playerX=1;
-        bool won=false;
+        
         if (player_one_turn){
             printf("\nTurno del jugador 1:\n");
             PrintBoard(player1field);
             inputcheck = UserInput(user_input);
-            inputrow = Row(inputrow, user_input);
-            inputcol = Columns(inputcol,user_input);
+            inputrow = Row(user_input);
+            inputcol = Columns(user_input);
             shootcheck = VerifyShoot(inputrow, inputcol, player1field, playertwo);
 
             if (inputcheck == false || shootcheck == false){
                 player_one_turn = true;
-                pass_turn = false;
+                //pass_turn = false;
             }
             else{
-                enemyX= BoatDown(filename2,inputrow,inputcol,playertwo,player1field,&playerX);//Cantidad de X del bote
+                enemyX= BoatDown(filename2,inputrow,inputcol,player1field,&playerX);//Cantidad de X del bote
                 //printf("Largo barco enemigo: %d. Lo que he abatido: %d\n",enemyX, playerX);
                 if(enemyX==playerX){
                     printf("Hundido!\n");
@@ -318,7 +317,7 @@ void Game(char filename1[10],char filename2[10],char player1field[10][10],char p
                 	printf("--------------------------\n");
                 }
                 player_one_turn = false;
-                pass_turn = true;
+                //pass_turn = true;
                 //PrintBoard(player2field);
             }
         }
@@ -326,15 +325,15 @@ void Game(char filename1[10],char filename2[10],char player1field[10][10],char p
             printf("\nTurno del jugador 2:\n");
             PrintBoard(player2field);
             inputcheck = UserInput(user_input);
-            inputrow = Row(inputrow, user_input);
-            inputcol = Columns(inputcol,user_input);
+            inputrow = Row(user_input);
+            inputcol = Columns(user_input);
             shootcheck = VerifyShoot(inputrow, inputcol, player2field, playerone);
             if (inputcheck == false || shootcheck == false){
                 player_one_turn = false;
-                pass_turn = false;
+                //pass_turn = false;
             }
 	    else{
-                enemyX= BoatDown(filename1,inputrow,inputcol,playerone,player2field,&playerX);//Cantidad de X del bote
+                enemyX= BoatDown(filename1,inputrow,inputcol,player2field,&playerX);//Cantidad de X del bote
                 //printf("Largo barco enemigo: %d. Lo que he abatido: %d\n",enemyX, playerX);
                 
                 if(enemyX==playerX){
@@ -357,7 +356,7 @@ void Game(char filename1[10],char filename2[10],char player1field[10][10],char p
                 	printf("--------------------------\n");
                 }
                 player_one_turn = true;
-		pass_turn = true;
+		//pass_turn = true;
 	   }
                   
         }
@@ -368,13 +367,12 @@ void AutomatedGame(char filename1[10], char filename2[10],char player1field[10][
     bool continue_game = true;
     bool player_one_turn = true;
     bool check_automated_shot = true;
-    bool pass_turn = true;
+    //bool pass_turn = true;
 
     int p1boatdown = 0;
     int pcboatdown = 0;
 
-    int p1_Xs = 0;
-    int p2_Xs = 0;
+    
 
     bool inputcheck;
     bool shootcheck;
@@ -386,8 +384,8 @@ void AutomatedGame(char filename1[10], char filename2[10],char player1field[10][
         char user_input[4];
         int inputrow;
         int inputcol;
-	int enemyX;
-	int playerX=1;
+	    int enemyX;
+	    int playerX=1;
         int pcinputrow;
         int pcinputcol;
         
@@ -395,17 +393,17 @@ void AutomatedGame(char filename1[10], char filename2[10],char player1field[10][
             printf("\nTurno del jugador 1:\n");
             PrintBoard(player1field);
             inputcheck = UserInput(user_input);
-            inputrow = Row(inputrow, user_input);
-            inputcol = Columns(inputcol,user_input);
+            inputrow = Row(user_input);
+            inputcol = Columns(user_input);
             shootcheck = VerifyShoot(inputrow, inputcol, player1field, playertwo);
 
             if (inputcheck == false || shootcheck == false){
                 player_one_turn = true;
-                pass_turn = false;
+                //pass_turn = false;
             }
             else{
             
-            	enemyX= BoatDown(filename2,inputrow,inputcol,playertwo,player1field,&playerX);
+            	enemyX= BoatDown(filename2,inputrow,inputcol,player1field,&playerX);
             	//printf("Largo barco enemigo: %d. LO que ha abatido: %d\n",enemyX,playerX);
             	
             	if(enemyX==playerX){
@@ -427,7 +425,7 @@ void AutomatedGame(char filename1[10], char filename2[10],char player1field[10][
             		printf("--------------------------\n");
             	}
             	player_one_turn= false;
-            	pass_turn= true;
+            	//pass_turn= true;
             }
          }
          else{
@@ -441,7 +439,7 @@ void AutomatedGame(char filename1[10], char filename2[10],char player1field[10][
          		}
          	}
          	
-         	enemyX=BoatDown(filename1,pcinputrow,pcinputcol,playerone,player2field,&playerX);
+         	enemyX=BoatDown(filename1,pcinputrow,pcinputcol,player2field,&playerX);
          	//printf("Largo barco enemigo: %d. LO abatido: %d",enemyX, playerX);
          	
          	if(enemyX==playerX){
@@ -464,7 +462,7 @@ void AutomatedGame(char filename1[10], char filename2[10],char player1field[10][
          	}
          	//PrintBoard(player1field);
          	player_one_turn= true;//Cambia turno
-         	pass_turn=true;
+         	//pass_turn=true;
          	//PrintBoard(player2field);
          }     
      }  
@@ -509,12 +507,12 @@ bool VerifyShoot(int inputrow, int inputcols, char player[10][10], char player_e
     return true;
 }
 
-int BoatDown(char filename_enemy[10],int inputrow, int inputcols, char player_enemy[10][10],char playerfield[10][10], int *playerX){
+int BoatDown(char filename_enemy[10],int inputrow, int inputcols,char playerfield[10][10], int *playerX){
     char str[MAXCHAR];
     files = fopen(filename_enemy, "r");
     int enemyX = 0;
     int boats__ = 0;
-    bool space = false;
+    
 
     while (fgets(str, MAXCHAR, files) != NULL){
         int counter=1;
@@ -522,12 +520,12 @@ int BoatDown(char filename_enemy[10],int inputrow, int inputcols, char player_en
         int len;
         char col;
         int row;
+        
         char orient;
-        bool boat;
         char onlyboat[10][10];
         BoardAux(onlyboat);
 
-        for (int i = 0; i <= sizeof(str); i++){
+        for (int i = 0; i <= (int)sizeof(str); i++){
                 char aux = str[i-1];
                 
                 if (str[i] == *";"){
@@ -557,7 +555,7 @@ int BoatDown(char filename_enemy[10],int inputrow, int inputcols, char player_en
                     counter ++;
                 }
             }
-        boat= AddBoat(type, len, col, row, orient, onlyboat);
+        AddBoat(type, len, col, row, orient, onlyboat);
 
         if(onlyboat[inputrow][inputcols]==88){//Si el barco en la posicion que ingrese, calza con uno de los enemigos...
             enemyX=len;//Este va a ser el largo del barco enemigo
@@ -570,7 +568,7 @@ int BoatDown(char filename_enemy[10],int inputrow, int inputcols, char player_en
                         while(true){
                             if (playerfield[inputrow][inputcols + c1] == 95){ 
                                 boats__ = boats__ + 1;
-                                space = false;
+                                
                                 break;
                             }
                            else if (playerfield[inputrow][inputcols + c1] == 46) {
@@ -593,7 +591,7 @@ int BoatDown(char filename_enemy[10],int inputrow, int inputcols, char player_en
                         while(true){
                             if (playerfield[inputrow][inputcols - c2] == 95){ 
                                 boats__ = boats__ + 1;
-                                space = false;
+                                
                                 break;
                             }
                            else if (playerfield[inputrow][inputcols - c2] == 46) {
@@ -620,7 +618,7 @@ int BoatDown(char filename_enemy[10],int inputrow, int inputcols, char player_en
                         while (true) {
                             if (playerfield[inputrow - c3][inputcols] == 95){
                                 boats__ = boats__ + 1;
-                                space = false;
+                                
                                 break;
                             }
                             else if (playerfield[inputrow - c3][inputcols] == 46) {
@@ -643,7 +641,7 @@ int BoatDown(char filename_enemy[10],int inputrow, int inputcols, char player_en
                         while(true){
                             if(playerfield[inputrow + c4][inputcols]==95){
                                 boats__=boats__+ 1;
-                                space=false;
+                               
                                 break;
                             }
                             else if (playerfield[inputrow + c4][inputcols] == 46) {
@@ -674,11 +672,11 @@ int BoatDown(char filename_enemy[10],int inputrow, int inputcols, char player_en
 }
 
 
-int Row(int row, char user_input[4]){
+int Row( char user_input[4]){
 	return user_input[2]-48;
 }
 
-int Columns(int col, char user_input[4]){
+int Columns(char user_input[4]){
 	return (int)user_input[0]-65;
 }
 
