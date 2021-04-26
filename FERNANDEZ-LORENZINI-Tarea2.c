@@ -7,8 +7,18 @@
 #define MAXCHAR 
 
 
+
+struct Genders{
+    char *tog;
+    char *id;
+    char *artist;
+};
+
+
+
 int CheckGender(char *gender);
 void SongsGener(char *gender,int *counter);
+void GenderData(char *gender_query,int genre_songs, struct Genders *ptr);
 
 FILE *files;
 int main(int argc, char **argv){
@@ -18,10 +28,13 @@ int main(int argc, char **argv){
         char *gender=argv[2];
         int populate= atoi(argv[3]);
         CheckGender(gender);
+        struct Genders  *songs_by_gender;
         if(g[1]=='g' && (populate>=0 && populate<=100) ){//Si ingresa g y una popularidad valida.
             int songs=0;
             SongsGener(gender,&songs);
-            printf("%d\n",songs);
+            GenderData(gender,songs,songs_by_gender);
+            printf("Cualquier Cancion----> Para checkear que se ingresaron bien los datos\
+            \nCancion: %s\nArtista: %s\nGenero: %s\n\n",(songs_by_gender+1)->id,(songs_by_gender)->artist,(songs_by_gender+1)->tog);
             printf("Funciona\n");//
         }
         else{
@@ -100,6 +113,7 @@ int CheckGender(char *gender){//Checkea si el genero ingresado es correcto
 }
 
 void SongsGener(char *gender, int *counter){
+
     files= fopen("genres.txt","r");
     int space= strlen(gender);
     char *type_of_gender=(char*)malloc(space*sizeof(char));
@@ -128,6 +142,94 @@ void SongsGener(char *gender, int *counter){
     }
     //printf("%d/%d\n",counter,total);
     free(type_of_gender);
+    fclose(files);
+}
+
+void GenderData(char *gender_query,int genre_songs, struct Genders *ptr){
+    files= fopen("genres.txt","r");
+    int space= strlen(gender_query);
+    char *gender_aux=(char*)malloc(genre_songs*sizeof(char));
+    char c=fgetc(files);
+    int songs=0;
+
+    while(c!=EOF){
+
+        for(int i=0;i<space;i++){//El genero ya esta checkeado, lo relleno para compararlo con el archivo.
+            gender_aux[i]=c;
+            c=fgetc(files);
+        }
+
+        if(c!='\n'){
+            if(strcmp(gender_aux,gender_query)==0){//Aqui el c=fgetc(files)= ";", entra cuando identifica al genero.
+                ptr[songs].tog=(char*)malloc(strlen(gender_aux)*sizeof(char));//Asigno memoria para guardar el genero. //Creo que esto no es neserario.
+                strcpy(ptr[songs].tog,gender_aux); //Genero
+                c= fgetc(files);//Avanza una letra para ingregando lo demas.
+
+                int actual=2;
+                int len=0;
+                char *id_aux=(char*)malloc(actual*sizeof(char));
+                while(c!='\n'){
+                    if(len==actual){//Si necesita mas memoria.
+                        actual+=2;//Lo agrande de a dos espacios.
+                        char*id_aux2=(char*)realloc(id_aux,actual*sizeof(char));
+                        if(!id_aux2){
+                            printf("Song name too long for available memory. \n");
+                        }
+                        else{
+                            id_aux=id_aux2;
+                        }
+                    }
+                    else{
+                        if(c!=';'){//Agrega letra siguiente de la cancion.
+                            id_aux[len]=c;
+                            len++;
+                            c=fgetc(files);
+                        }
+                        else{//Desde aqui trabaja con el artista.
+                            c=fgetc(files);
+                            int actual2=1;
+                            int len2=0;
+                            char *artist_aux=(char*)malloc(actual2*sizeof(char));
+                            while(c!='\n'){
+                                artist_aux[len2]=c;
+                                if(len2==actual2){//Si necesita mas memoria.
+                                    actual2++;//Le agrego uno porque el largo es muy variable.
+                                    char *artist_aux2=(char*)realloc(artist_aux,actual2*sizeof(char));
+                                    if(!artist_aux2){
+                                        printf("Artist name too long for available memory. \n");
+                                    }
+                                    else{
+                                        artist_aux=artist_aux2;
+                                    }
+                                }
+                                c=fgetc(files);
+                                len2++;
+                            }
+                            ptr[songs].artist=(char*)malloc(strlen(artist_aux)*sizeof(char));//Asigno memoria para struct.
+                            strcpy(ptr[songs].artist,artist_aux);
+                            free(artist_aux);//Lo libero para nuevo artista.
+                            actual2=1;
+                            len2=0;
+                            artist_aux=(char*)malloc(actual2*sizeof(char));
+                            songs++;
+                        }
+                    }
+                }
+                ptr[songs].id=(char*)malloc(strlen(id_aux)*sizeof(char));//Asigno memoria para struct.
+                strcpy(ptr[songs].id,id_aux);
+                free(id_aux);//Lo libero ara nueva cancion.
+                actual=2;
+                len=0;
+                id_aux=(char*)malloc(actual*sizeof(char));
+            }
+            else{
+                free(gender_aux);
+                gender_aux=(char*)malloc(space*sizeof(char));
+            }
+        }
+        c=fgetc(files);
+    }
+    free(gender_aux);
     fclose(files);
 }
 
