@@ -18,7 +18,8 @@ struct Genders{
 
 int CheckGender(char *gender);
 void SongsGener(char *gender,int *counter);
-void GenderData(char *gender_query,int genre_songs, struct Genders *ptr);
+void Genderata(char *gender_query,int genre_songs, struct Genders *ptr);
+bool check(char *linea,char *genero);
 
 FILE *files;
 int main(int argc, char **argv){
@@ -146,9 +147,10 @@ void SongsGener(char *gender, int *counter){
 }
 
 void GenderData(char *gender_query,int genre_songs, struct Genders *ptr){
+
     files= fopen("genres.txt","r");
     int space= strlen(gender_query);
-    char *gender_aux=(char*)malloc(genre_songs*sizeof(char));
+    char *gender_aux=(char*)malloc(space*sizeof(char));
     char c=fgetc(files);
     int songs=0;
 
@@ -211,7 +213,7 @@ void GenderData(char *gender_query,int genre_songs, struct Genders *ptr){
                             actual2=1;
                             len2=0;
                             artist_aux=(char*)malloc(actual2*sizeof(char));
-                            songs++;
+                            
                         }
                     }
                 }
@@ -221,6 +223,7 @@ void GenderData(char *gender_query,int genre_songs, struct Genders *ptr){
                 actual=2;
                 len=0;
                 id_aux=(char*)malloc(actual*sizeof(char));
+                songs++;
             }
             else{
                 free(gender_aux);
@@ -233,3 +236,76 @@ void GenderData(char *gender_query,int genre_songs, struct Genders *ptr){
     fclose(files);
 }
 
+void Cargar(char *genero, int songs){
+    files= fopen("genres.txt", "r");
+    int canciones_revisadas = 0; 
+    int cantidad_canciones = 0; 
+    char c = fgetc(files);
+    int initial_size = 2; 
+    int actual_size = initial_size;
+    int letras_agregadas = 0;
+    char *linea = malloc(sizeof(char)*initial_size);  	
+    char *token;
+    while (c != EOF){ 
+    	bool ch=true;
+        if (c == '\n'){
+          
+            linea[letras_agregadas] = 0; 
+            ch=check(linea,genero);
+            //printf("%s\n", artista);
+            //break;
+            if(ch){
+            		  printf("%s\n",linea);//Printea la linea entera Ej Movie;09JiiTTzyna9MmQMgfzxnv;Amalya
+            		  token=strtok(linea,";");
+            		  printf("%s\n",token);//Movie
+            		  token=strtok(NULL,";");
+            		  printf("%s\n",token);//09JiiTTzyna9MmQMgfzxnv
+            		  token=strtok(NULL,";");
+            		  printf("%s\n",token);//Amalya
+            		  token=strtok(NULL,";");
+            		  cantidad_canciones++;  
+            	   	 	
+            }
+            free(linea); // Libera la linea para qu epueda usarla en la siguiente.
+            canciones_revisadas++;
+            linea = (char*)malloc(sizeof(char)*initial_size); 
+            actual_size = initial_size; 
+            letras_agregadas = 0; 
+        }
+	
+        else{
+            if (letras_agregadas == actual_size){
+   
+                actual_size *= 3;
+                actual_size /= 2;
+                char *p = (char*)realloc(linea, sizeof(char) * actual_size);                                          
+                if(!p){//checkea si no queda memoria
+                    
+                }
+                else{
+                    linea = p;
+                } 
+                
+
+            }
+            linea[letras_agregadas] = c;//le agrega la letra
+            letras_agregadas++;
+        }
+        c = fgetc(files);//itera letra
+    }
+    fclose(files);
+    //printf("Canciones revisadas: %d\n", canciones_revisadas); 
+    //printf("%d Canciones.\n", cantidad_canciones); 
+
+}
+
+bool check(char *linea,char *genero){//Checke si la linea corresponde al genero consultado	
+	int j=strlen(genero);
+	for(int i=0;i<j;i++){
+		if(linea[i]!=genero[i]){
+			return false;//retorna falso si encuentra una diferencia
+		}
+
+	}
+	return true;
+}
