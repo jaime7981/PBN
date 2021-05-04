@@ -123,42 +123,45 @@ void SongsGener(char *gender, int *counter){
     files = fopen("genres.txt","r");
 
     int space = strlen(gender);
-    char *type_of_gender = (char*)malloc(space*sizeof(char));
+    printf("%s\n", gender);
+    char *type_of_gender = (char*)malloc(2*space*sizeof(char));
 
     char c = fgetc(files);
     int total = 0;
-
-    printf("Estoy pegado en un while?\n");
+    int ct = 0;
+    bool check = true;
 
     while(c != EOF){
-        if(c == '\n'){
-            //printf("%c\n", c); Saltos de linea
-            total ++;
+        if (c != '\n') {
+            if (c == ';' && check == true){
+                check = false;
+                //printf("%s / %s\n", type_of_gender, gender);
+                if (strcmp(gender, type_of_gender) == 0){
+                    total ++;
+                    //printf("%s\n", type_of_gender);
+                }
+
+                for (int a = 0; a < space; a ++){
+                    type_of_gender[a] = *"";
+                }
+            }
+            if (check == true){
+                type_of_gender[ct] = c;
+                ct ++;
+            }
         }
-        else {
-            //printf("%c", c); Letras
+        else if (c == '\n'){
+            check = true;
+            ct = 0;
+
+            for (int a = 0; a < 2*space; a ++){
+                type_of_gender[a] = *"";
+            }
         }
         c = fgetc(files);
     }
 
-    /*
-    while(c != EOF){
-        if(c != '\n'){
-
-            c = fgetc(files);
-                
-            if(strcmp(type_of_gender,gender) == 0){
-                (*counter)++;
-            }
-            else{
-                free(type_of_gender);
-                type_of_gender = (char*)malloc(space*sizeof(char));
-            }
-        }
-        c = fgetc(files);
-    }*/
-
-    printf("%d / %d\n",counter,total);
+    printf("%d\n", total);
     free(type_of_gender);
     fclose(files);
 }
