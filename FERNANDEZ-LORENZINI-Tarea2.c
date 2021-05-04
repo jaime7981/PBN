@@ -33,11 +33,11 @@ int main(int argc, char **argv){
             int songs=0;
 
             SongsGener(gender,&songs);
-            printf("Pase por SongsGener");
-            GenderData(gender, songs, songs_by_gender);
-            printf("Pase por Gener Data");
+            printf("Pase por SongsGener\n");
+            //GenderData(gender, songs, songs_by_gender);
+            printf("Pase por GenerData\n");
 
-            printf("Cualquier Cancion----> Para checkear que se ingresaron bien los datos\
+            //printf("Cualquier Cancion----> Para checkear que se ingresaron bien los datos\
             \nCancion: %s\nArtista: %s\nGenero: %s\n\n",(songs_by_gender)->id, (songs_by_gender)->artist, (songs_by_gender)->tog);
             printf("Funciona\n");
         }
@@ -69,51 +69,49 @@ int CheckGender(char *gender){//Checkea si el genero ingresado es correcto
     files= fopen("genres.txt","r");
 
     int space = strlen(gender);
-    char *type_of_gender = (char*)malloc(space*sizeof(char));
-    char c = fgetc(files);
+    char *type_of_gender = (char*)malloc(2*space*sizeof(char));
+
     int len = 0;
 
-    if(files != NULL){
-        while(c != EOF){
-            for(int i = 0; i < space; i++){
-                type_of_gender[i] = c;
-                c = fgetc(files);
-            }
+    char c = fgetc(files);
+    int ct = 0;
+    bool check = true;
 
-            len = strlen(type_of_gender);
+    if (files != NULL){
+        while (c != EOF){
+            if (c != '\n') {
+                if (c == ';' && check == true){
+                    check = false;
+                    printf("%s / %s\n", type_of_gender, gender);
+                    if (strcmp(gender, type_of_gender) == 0){
+                        printf("El genero si esta\n");
+                        fclose(files);
+                        free(type_of_gender);
+                        return 0;
+                    }
 
-            if(c == ';'){
-                while(c != '\n'){
-                    c = fgetc(files);
+                    for (int a = 0; a < space; a ++){
+                        type_of_gender[a] = *"";
+                    }
+                }
+                if (check == true){
+                    type_of_gender[ct] = c;
+                    ct ++;
                 }
             }
-            else{
-                len++;
-                while(c != '\n'){
-                    c = fgetc(files);
+            else if (c == '\n'){
+                check = true;
+                ct = 0;
+
+                for (int a = 0; a < 2*space; a ++){
+                    type_of_gender[a] = *"";
                 }
-            }
-
-            //printf("%d  %d  %s %s\n",space,len,type_of_gender,gender);
-
-            if(strcmp(type_of_gender, gender) == 0 && (space == len)){
-                    printf("El genero si esta\n");
-                    fclose(files);
-                    return 0;
-            }
-            else{
-                free(type_of_gender);
-                type_of_gender = (char*)malloc(space*sizeof(char));
-                len = 0;
             }
             c = fgetc(files);
         }
     }
-    else{
-        printf("Error: Could not open file %s\n", gender);
-        exit(1);
-    }
-    printf("The genre is not found in the database, please try again.\n");
+
+    printf("Genere not founded");
     free(type_of_gender);
     fclose(files);
     exit(1);
@@ -160,17 +158,16 @@ void SongsGener(char *gender, int *counter){
         }
         c = fgetc(files);
     }
-
-    printf("%d\n", total);
     free(type_of_gender);
     fclose(files);
+    printf("%d\n", total);
 }
 
 void GenderData(char *gender_query, int genre_songs, struct Genders *ptr){
     files = fopen("genres.txt","r");
 
     int space = strlen(gender_query);
-    char *gender_aux = (char*)malloc(space*sizeof(char));
+    char *gender_aux = (char*)malloc(2*space*sizeof(char));
     char c = fgetc(files);
     int songs = 0;
 
