@@ -7,9 +7,9 @@
 #define MAXCHAR 
 
 struct Genders{
-    char tog[20];
-    char id[20];
-    char artist[20];
+    char *tog;
+    char *id;
+    char *artist;
 };
 
 
@@ -21,7 +21,7 @@ bool check(char *linea,char *genero);
 FILE *files;
 int main(int argc, char **argv){
 
-    if(argc ==4){//Consultar por Generos Musicales
+    if(argc == 4){//Consultar por Generos Musicales
         char *g = argv[1];
         char *gender = argv[2];
         int populate = atoi(argv[3]);
@@ -33,11 +33,12 @@ int main(int argc, char **argv){
         struct Genders *songs_by_gender;
 
         if(g[1] == 'g' && (populate >= 0 && populate <= 100) ){//Si ingresa g y una popularidad valida.
-            //GenderData(gender, songs, songs_by_gender);
-            printf("Pase por GenerData\n");
+            
+            GenderData(gender, songs, songs_by_gender);
 
-            //printf("Cualquier Cancion----> Para checkear que se ingresaron bien los datos\
-            \nCancion: %s\nArtista: %s\nGenero: %s\n\n",(songs_by_gender)->id, (songs_by_gender)->artist, (songs_by_gender)->tog);
+            for (int a = 1; a < songs; a ++){
+                printf("Cancion: %s\nArtista: %s\nGenero: %s\n\n",(songs_by_gender + a)->id, (songs_by_gender + a)->artist, (songs_by_gender + a)->tog);
+            }
             printf("Funciona\n");
         }
         else{
@@ -80,7 +81,7 @@ int CheckGender(char *gender, int *counter){//Checkea si el genero ingresado es 
             if (c != '\n') {
                 if (c == ';' && check == true){
                     check = false;
-                    printf("%s / %s\n", type_of_gender, gender);
+                    //printf("%s / %s\n", type_of_gender, gender);
                     if (strcmp(gender, type_of_gender) == 0){
                         total ++;
                     }
@@ -113,12 +114,11 @@ int CheckGender(char *gender, int *counter){//Checkea si el genero ingresado es 
         return 0;
     }
     else{
-        printf("Genere not founded");
+        printf("Error: Genere not founded\n");
         free(type_of_gender);
         fclose(files);
         exit(1);
     }
-    
 }
 
 void GenderData(char *gender_query, int genre_songs, struct Genders *ptr){
@@ -127,9 +127,9 @@ void GenderData(char *gender_query, int genre_songs, struct Genders *ptr){
     int space = strlen(gender_query);
     char *gender_aux = (char*)malloc(2*space*sizeof(char));
     char c = fgetc(files);
-    int songs = 0;
+    int counter = 0;
 
-    ptr = (struct Genders*) malloc(songs*sizeof(struct Genders));
+    ptr = (struct Genders*) malloc(counter*sizeof(struct Genders));
 
     while(c != EOF){
 
@@ -141,9 +141,9 @@ void GenderData(char *gender_query, int genre_songs, struct Genders *ptr){
         if(c != '\n'){
             if(strcmp(gender_aux,gender_query) == 0){//Aqui el c=fgetc(files)= ";", entra cuando identifica al genero.
                 //ptr[songs].tog=(char*)malloc(strlen(gender_aux)*sizeof(char));  Asigno memoria para guardar el genero. //Creo que esto no es neserario.
-                ptr = (struct Genders*) realloc(ptr, (songs + 1)*sizeof(struct Genders));
+                ptr = (struct Genders*) realloc(ptr, (counter + 1)*sizeof(struct Genders));
 
-                strcpy((ptr + songs)->tog, gender_aux);
+                strcpy((ptr + counter)->tog, gender_aux);
                 //strcpy(ptr[songs].tog,gender_aux); //Genero
 
                 c= fgetc(files);//Avanza una letra para ingregando lo demas.
@@ -189,7 +189,7 @@ void GenderData(char *gender_query, int genre_songs, struct Genders *ptr){
                                 len2++;
                             }
                             //ptr[songs].artist=(char*)malloc(strlen(artist_aux)*sizeof(char));//Asigno memoria para struct.
-                            strcpy((ptr + songs)->artist,artist_aux);
+                            strcpy((ptr + counter)->artist,artist_aux);
 
                             free(artist_aux);//Lo libero para nuevo artista.
                             actual2 = 1;
@@ -201,12 +201,12 @@ void GenderData(char *gender_query, int genre_songs, struct Genders *ptr){
                 }
 
                 //ptr[songs].id=(char*)malloc(strlen(id_aux)*sizeof(char));//Asigno memoria para struct.
-                strcpy((ptr + songs)->id,id_aux);
+                strcpy((ptr + counter)->id,id_aux);
                 free(id_aux);//Lo libero ara nueva cancion.
                 actual = 2;
                 len = 0;
                 id_aux = (char*)malloc(actual*sizeof(char));
-                songs++;
+                counter++;
             }
             else{
                 free(gender_aux);
@@ -215,6 +215,7 @@ void GenderData(char *gender_query, int genre_songs, struct Genders *ptr){
         }
         c = fgetc(files);
     }
+
     free(gender_aux);
     fclose(files);
 }
