@@ -1,0 +1,48 @@
+files = fopen("genres.txt","r");
+
+    int space = strlen(gender_query);
+    char *gender_aux = (char*)malloc(2*space*sizeof(char));
+
+    char c = fgetc(files);
+    int counter = 0;
+    int sub_counter = 0;
+
+    while ( c != EOF){
+
+        if ( c != '\n'){
+            if (c == ';'){
+                if (counter == 0){
+                    //printf("Genere: %s\n", gender_aux);
+                    //strcpy((ptr + counter)->tog, gender_aux);
+                }
+                else if (counter == 1){
+                    //printf("Song ID: %s\n", gender_aux);
+                    //strcpy((ptr + counter)->id, gender_aux);
+                }
+
+                for (int a = 0; a < 2*space; a ++){
+                    gender_aux[a] = *"";
+                }
+                sub_counter = 0;
+                //printf("%d\n", counter);
+                counter ++;
+            }
+            else{
+                gender_aux[sub_counter] = c;
+                sub_counter ++;
+            }
+        }
+        else{
+            //printf("Artist: %s\n", gender_aux);
+            //strcpy((ptr + counter)->artist, gender_aux);
+            for (int a = 0; a < 2*space; a ++){
+                gender_aux[a] = *"";
+            }
+            sub_counter = 0;
+            counter = 0;
+        }
+        c = fgetc(files);
+    }
+
+    free(gender_aux);
+    fclose(files);
