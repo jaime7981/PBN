@@ -133,7 +133,10 @@ void SongsGener(char *gender, int *counter){
     while(c != EOF){
         if(c == '\n'){
             //printf("%c\n", c); Saltos de linea
-            total ++;
+            if (){
+                total ++;
+            }
+            
         }
         else {
             //printf("%c", c); Letras
