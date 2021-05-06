@@ -108,7 +108,7 @@ Genders* ReadData(Genders*raiz){
 
 Genders* ReadGenres(Genders* raiz){
     FILE* files;
-    files= fopen("genres2.txt","r");
+    files= fopen("genres.txt","r");
 
     Genders *Songs;
     char* Gender;
@@ -161,7 +161,7 @@ int ReadSongs(Genders* raiz){
     char* Mode;
     int err=0;
     int check;
-    files= fopen("songs2.txt","r");
+    files= fopen("songs.txt","r");
 
     if(files==NULL){
         printf("Error: 'songs.txt' could not be opened\n");
