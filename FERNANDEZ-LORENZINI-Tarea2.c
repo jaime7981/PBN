@@ -32,6 +32,8 @@ int main(int argc, char **argv){
 
         struct Genders *songs_by_gender;
 
+        songs_by_gender = (struct Genders*) malloc(sizeof(struct Genders));
+
         if(g[1] == 'g' && (populate >= 0 && populate <= 100) ){//Si ingresa g y una popularidad valida.
             
             GenderData(gender, songs, songs_by_gender);
@@ -119,60 +121,6 @@ int CheckGender(char *gender, int *counter){//Checkea si el genero ingresado es 
         fclose(files);
         exit(1);
     }
-<<<<<<< HEAD
-    printf("The genre is not found in the database, please try again.\n");
-    free(type_of_gender);
-    fclose(files);
-    exit(1);
-}
-
-void SongsGener(char *gender, int *counter){
-    files = fopen("genres.txt","r");
-
-    int space = strlen(gender);
-    char *type_of_gender = (char*)malloc(space*sizeof(char));
-
-    char c = fgetc(files);
-    int total = 0;
-
-    printf("Estoy pegado en un while?\n");
-
-    while(c != EOF){
-        if(c == '\n'){
-            //printf("%c\n", c); Saltos de linea
-            if (){
-                total ++;
-            }
-            
-        }
-        else {
-            //printf("%c", c); Letras
-        }
-        c = fgetc(files);
-    }
-
-    /*
-    while(c != EOF){
-        if(c != '\n'){
-
-            c = fgetc(files);
-                
-            if(strcmp(type_of_gender,gender) == 0){
-                (*counter)++;
-            }
-            else{
-                free(type_of_gender);
-                type_of_gender = (char*)malloc(space*sizeof(char));
-            }
-        }
-        c = fgetc(files);
-    }*/
-
-    printf("%d / %d\n",counter,total);
-    free(type_of_gender);
-    fclose(files);
-=======
->>>>>>> 43c77c8f6725efbaeca259642dc9e603dc73080a
 }
 
 void GenderData(char *gender_query, int genre_songs, struct Genders *ptr){
@@ -181,7 +129,7 @@ void GenderData(char *gender_query, int genre_songs, struct Genders *ptr){
     int space = strlen(gender_query);
     char *gender_aux = (char*)malloc(2*space*sizeof(char));
     char c = fgetc(files);
-    int counter = 0;
+    int counter = 1;
 
     ptr = (struct Genders*) malloc(counter*sizeof(struct Genders));
 
